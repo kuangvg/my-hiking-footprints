@@ -2,182 +2,259 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的徒步足迹 - My Hiking Footprints</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的徒步足迹 - 保持探索世界的心</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
     <style>
-        /* --- 核心变量 --- */
+        /* --- 核心变量 (太阳黑/星辰光芒主题) --- */
         :root {
-            --primary-green: #2d5a27;
-            --earth-brown: #8b5a2b;
-            --bg-light: #f4f7f1;
+            --primary-green: #4ade80; /* 荧光绿，代表生命与轨迹 */
+            --bg-space: #030712; /* 太阳黑：比深灰更纯粹，比纯黑更有深度的太空色 */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-glass: rgba(255, 255, 255, 0.03); /* 极致微弱的玻璃拟态 */
+            --border-glow: rgba(255, 255, 255, 0.08); /* 星光切边 */
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
             margin: 0;
-            background-color: var(--bg-light);
-            color: #333;
+            background-color: var(--bg-space);
+            color: var(--text-main);
+            overflow-x: hidden;
+            /* 纯 CSS 绘制星辰光芒背景 */
+            background-image:
+                radial-gradient(1px 1px at 20px 30px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 80px 120px, rgba(255,255,255,0.4), rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 150px 40px, rgba(255,255,255,0.9), rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 220px 180px, rgba(255,255,255,0.3), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 280px 90px, rgba(255,255,255,0.6), rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 300px 300px;
         }
 
-        /* 顶部导航 */
-        header {
-            background-color: var(--primary-green);
-            color: white;
-            padding: 2rem 1rem;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        /* =========================================
+           第一部分：太空探索起始页 (Intro Screen)
+           ========================================= */
+        #intro-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            background-color: #000;
+            overflow: hidden;
+            transition: opacity 1.5s ease-in-out;
         }
+
+        /* 太空地球背景图 */
+        .intro-bg {
+            position: absolute;
+            inset: 0;
+            /* 使用你重命名后的专属太空照片 */
+            background-image: url('photos/intro-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            /* 设定缩放的中心点，模拟向亚洲/中国大陆板块缩放 */
+            transform-origin: 70% 40%; 
+            transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1), opacity 2s ease;
+        }
+
+        /* 暗角遮罩，突出文字 */
+        .intro-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
+        }
+
+        /* 黄金三分之一处的 Tag 按钮 */
+        .explore-btn {
+            position: absolute;
+            top: 33vh; /* 将按钮精准定位在屏幕上方 1/3 处 */
+            z-index: 10000;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            /* 呼吸灯发光动效 */
+            animation: pulse-glow 2.5s infinite;
+        }
+
+        .explore-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(255, 255, 255, 0.6); }
+            100% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+        }
+
+        /* 降落动画执行时的类名 */
+        .zoom-into-earth {
+            transform: scale(5); /* 剧烈放大，模拟穿透大气层 */
+            opacity: 0; /* 最终溶于黑夜 */
+        }
+        .fade-out { opacity: 0 !important; pointer-events: none; }
+
+        /* =========================================
+           第二部分：主页面 (隐藏状态 -> 浮现状态)
+           ========================================= */
+        #main-wrapper {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 2s ease-out, transform 2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            pointer-events: none; /* 动画完成前不可点击 */
+            min-height: 100vh;
+        }
+
+        /* 动画完成后激活主页面 */
+        #main-wrapper.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* 顶部导航 (玻璃态) */
+        header {
+            background-color: rgba(3, 7, 18, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 3rem 1rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-glow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 { margin: 0; color: var(--primary-green); letter-spacing: 2px; text-shadow: 0 0 20px rgba(74, 222, 128, 0.2); }
 
         /* 统计看板 */
         .stats-banner {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            padding: 1.5rem;
-            background: white;
-            margin-bottom: 2rem;
+            display: flex; justify-content: center; gap: 4rem; padding: 2rem;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-glow);
+            margin-bottom: 3rem;
         }
-
         .stat-item { text-align: center; }
-        .stat-item h3 { margin: 0; color: var(--primary-green); }
-        .stat-item p { margin: 5px 0 0; font-size: 0.9rem; color: #666; }
+        .stat-item h3 { margin: 0; color: var(--text-main); font-size: 2.2rem; font-weight: 300;}
+        .stat-item p { margin: 5px 0 0; font-size: 0.85rem; color: var(--primary-green); letter-spacing: 1px;}
 
         /* 卡片网格 */
         .trips-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem 3rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem;
+            max-width: 1200px; margin: 0 auto; padding: 0 1rem 4rem;
         }
 
+        /* 徒步卡片 (悬浮微光) */
         .trip-card {
-            background: white;
-            border-radius: 12px;
+            background: var(--card-glass);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
             cursor: pointer;
         }
-
-        .trip-card:hover { transform: translateY(-5px); }
-
-        .trip-image { width: 100%; height: 200px; object-fit: cover; }
-
+        .trip-card:hover { 
+            transform: translateY(-10px); 
+            border-color: rgba(74, 222, 128, 0.4);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(74, 222, 128, 0.1); 
+        }
+        .trip-image { width: 100%; height: 220px; object-fit: cover; }
         .trip-content { padding: 1.5rem; }
-
-        .trip-title { margin: 0 0 0.5rem; font-size: 1.25rem; color: var(--primary-green); }
-
-        .trip-meta { font-size: 0.9rem; color: #777; margin-bottom: 1rem; }
-
+        .trip-title { margin: 0 0 0.5rem; font-size: 1.4rem; color: var(--text-main); font-weight: 600;}
+        .trip-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; letter-spacing: 1px;}
         .trip-stats {
-            display: flex;
-            justify-content: space-between;
-            border-top: 1px solid #eee;
-            padding-top: 1rem;
-            font-weight: bold;
+            display: flex; justify-content: space-between;
+            border-top: 1px solid var(--border-glow); padding-top: 1rem;
+            font-size: 0.9rem; color: var(--primary-green);
         }
 
-        /* 错误提示 */
-        #error-msg { text-align: center; color: red; padding: 2rem; }
+        #error-msg { text-align: center; color: #ef4444; padding: 2rem; }
 
         /* --- 弹窗样式 --- */
         .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0; top: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8);
-            overflow-y: auto;
+            display: none; position: fixed; z-index: 10000; left: 0; top: 0;
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); overflow-y: auto;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            opacity: 0; transition: opacity 0.3s ease;
         }
-
+        .modal.show { opacity: 1; }
+        
         .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 2.5rem;
-            width: 90%;
-            max-width: 850px;
-            border-radius: 20px;
-            position: relative;
+            background-color: #0b1120; /* 极深蓝黑 */
+            margin: 5% auto; padding: 3rem; width: 90%; max-width: 850px;
+            border-radius: 24px; position: relative; border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 1);
+            transform: translateY(20px); transition: transform 0.3s ease;
         }
+        .modal.show .modal-content { transform: translateY(0); }
 
-        .close-btn {
-            position: absolute; right: 25px; top: 15px;
-            font-size: 2.5rem; cursor: pointer; color: #999;
-        }
+        .close-btn { position: absolute; right: 30px; top: 20px; font-size: 2.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.2s;}
+        .close-btn:hover { color: #fff; }
 
-        /* 照片墙排版 */
-        .photo-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 1rem;
-        }
+        .photo-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 1rem; }
+        .gallery-img { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-glow);}
 
-        .gallery-img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        /* --- 📱 手机端适配 (响应式设计 Media Queries) --- */
+        /* 手机端深度适配 iPhone 17 Pro Max */
         @media (max-width: 768px) {
-            header { padding: 1.5rem 1rem; }
-            header h1 { font-size: 1.5rem; }
-            
-            .modal-content {
-                width: 92%;
-                margin: 5% auto;
-                padding: 1.2rem;
-                border-radius: 12px;
-            }
-
-            .close-btn { right: 15px; top: 10px; font-size: 2rem; }
-
-            #modal-detail-body > div:nth-child(2) {
-                grid-template-columns: 1fr !important; 
-                gap: 10px !important;
-            }
-
-            .photo-gallery {
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-                gap: 8px;
-            }
-
-            #real-map { height: 280px !important; }
+            header { padding: 2rem 1rem 1.5rem; }
+            header h1 { font-size: 1.6rem; }
+            .explore-btn { top: 33vh; padding: 15px 30px; font-size: 1rem; } /* 确保手机端按钮也在上方 1/3 处 */
+            .stats-banner { gap: 2rem; padding: 1.5rem; flex-wrap: wrap; }
+            .modal-content { width: 100%; margin: 0; min-height: 100vh; border-radius: 0; padding: 2rem 1.2rem; } /* 手机端弹窗全屏沉浸 */
+            .close-btn { right: 20px; top: 15px; }
+            #modal-detail-body > div:nth-child(2) { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+            .photo-gallery { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            #real-map { height: 300px !important; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1><i class="fas fa-mountain"></i> 保持探索世界的心</h1>
-        <p>惟江上之清风，与山间之明月</p>
-    </header>
-
-    <div class="stats-banner">
-        <div class="stat-item">
-            <h3 id="total-trips">-</h3>
-            <p>总记录</p>
-        </div>
-        <div class="stat-item">
-            <h3 id="total-dist">-</h3>
-            <p>总里程 (km)</p>
-        </div>
+    <!-- 第一部分：太空起始页 -->
+    <div id="intro-screen">
+        <div class="intro-bg" id="intro-bg"></div>
+        <div class="intro-overlay"></div>
+        <button class="explore-btn" id="explore-btn">保持探索世界的心</button>
     </div>
 
-    <div id="error-msg"></div>
+    <!-- 第二部分：主内容区 (初始隐藏) -->
+    <div id="main-wrapper">
+        <header>
+            <h1><i class="fas fa-satellite"></i> 走向山野</h1>
+            <p style="color: var(--text-muted); font-weight: 300; letter-spacing: 1px;">记录在星空下丈量过的每一公里</p>
+        </header>
 
-    <main class="trips-grid" id="trips-grid"></main>
+        <div class="stats-banner">
+            <div class="stat-item">
+                <h3 id="total-trips">-</h3>
+                <p>探索轨迹</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="total-dist">-</h3>
+                <p>累计里程 (KM)</p>
+            </div>
+        </div>
 
+        <div id="error-msg"></div>
+        <main class="trips-grid" id="trips-grid"></main>
+    </div>
+
+    <!-- 第三部分：详情弹窗 -->
     <div id="trip-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -186,6 +263,39 @@
     </div>
 
     <script>
+        /* =========================================
+           交互逻辑 1：太空降落动画
+           ========================================= */
+        document.getElementById('explore-btn').addEventListener('click', function() {
+            const btn = this;
+            const introBg = document.getElementById('intro-bg');
+            const introScreen = document.getElementById('intro-screen');
+            const mainWrapper = document.getElementById('main-wrapper');
+
+            // 1. 按钮文字变为状态提示，随后消散
+            btn.innerText = "正在降落：中国大陆...";
+            btn.style.animation = "none";
+            
+            setTimeout(() => { btn.classList.add('fade-out'); }, 300);
+
+            // 2. 触发背景巨幅放大 (模拟穿透大气层)
+            introBg.classList.add('zoom-into-earth');
+
+            // 3. 延时 1.2 秒后，星空主界面开始浮现
+            setTimeout(() => {
+                mainWrapper.classList.add('active');
+            }, 1200);
+
+            // 4. 延时 2.5 秒后，彻底移除起步页，释放内存并允许主界面交互
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+            }, 2500);
+        });
+
+
+        /* =========================================
+           交互逻辑 2：数据加载与渲染
+           ========================================= */
         let allTrips = [];
 
         async function loadTrips() {
@@ -193,23 +303,22 @@
             const errorMsg = document.getElementById('error-msg');
 
             try {
+                // 读取 JSON 数据
                 const response = await fetch('trips.json');
-                if (!response.ok) throw new Error('无法读取数据文件，请检查文件名或 Live Server 是否启动');
+                if (!response.ok) throw new Error('无法读取数据文件');
                 
                 const data = await response.json();
                 allTrips = data.trips; 
-
                 updateStats();
 
                 grid.innerHTML = ''; 
                 allTrips.forEach((trip, index) => {
                     const card = document.createElement('div');
                     card.className = 'trip-card';
-                    
                     card.onclick = () => showTripDetail(index);
                     
                     card.innerHTML = `
-                        <img src="${trip.cover_photo}" alt="${trip.name}" class="trip-image" onerror="this.src='https://via.placeholder.com/400x200?text=图片加载失败'">
+                        <img src="${trip.cover_photo}" alt="${trip.name}" class="trip-image" onerror="this.src='https://via.placeholder.com/400x200/0b1120/4ade80?text=图片加载失败'">
                         <div class="trip-content">
                             <div class="trip-meta">${trip.date} · ${trip.season}</div>
                             <h2 class="trip-title">${trip.name}</h2>
@@ -225,7 +334,7 @@
 
             } catch (err) {
                 console.error(err);
-                errorMsg.innerHTML = `<p style="color:red">加载失败: ${err.message}</p>`;
+                errorMsg.innerHTML = `<p>加载失败: ${err.message}</p>`;
             }
         }
 
@@ -235,6 +344,9 @@
             document.getElementById('total-dist').innerText = totalKm.toFixed(1);
         }
 
+        /* =========================================
+           交互逻辑 3：弹窗与地图渲染
+           ========================================= */
         let myMap = null;
 
         function showTripDetail(index) {
@@ -244,89 +356,93 @@
 
             const photoGalleryHtml = trip.photos.map(p => `
                 <div class="gallery-item">
-                    <img src="${p.file}" class="gallery-img" onerror="this.src='https://via.placeholder.com/200x150?text=照片丢失'">
-                    <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">${p.caption}</p>
+                    <img src="${p.file}" class="gallery-img" onerror="this.src='https://via.placeholder.com/200x150/0b1120/94a3b8?text=照片丢失'">
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">${p.caption}</p>
                 </div>
             `).join('');
 
             body.innerHTML = `
-                <div style="border-bottom: 2px solid var(--primary-green); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
-                    <h1 style="margin:0; color:var(--primary-green)">${trip.name}</h1>
-                    <p style="color:#666; margin: 5px 0;">行程日期：${trip.date} | 地点：${trip.location.region}</p>
+                <div style="border-bottom: 1px solid var(--border-glow); margin-bottom: 2rem; padding-bottom: 1rem;">
+                    <h1 style="margin:0 0 10px 0; color:var(--text-main); font-size: 2rem;">${trip.name}</h1>
+                    <p style="color:var(--text-muted); margin: 0; font-size: 0.95rem;">
+                        <i class="fas fa-calendar-alt"></i> ${trip.date} &nbsp;&nbsp;|&nbsp;&nbsp; 
+                        <i class="fas fa-map-marker-alt"></i> ${trip.location.region}
+                    </p>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem; background: #f9f9f9; padding: 15px; border-radius: 10px;">
-                    <div><strong>🔥 消耗：</strong>${trip.stats.calories_kcal} kcal</div>
-                    <div><strong>💓 平均心率：</strong>${trip.stats.avg_heart_rate_bpm} bpm</div>
-                    <div><strong>⏱️ 耗时：</strong>${trip.stats.duration_hours} 小时</div>
-                    <div><strong>⛰️ 累计爬升：</strong>${trip.stats.elevation_gain_m} m</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 2rem; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; border: 1px solid var(--border-glow);">
+                    <div style="color: var(--text-main);"><strong style="color:var(--text-muted)">🔥 消耗</strong><br><span style="font-size:1.2rem">${trip.stats.calories_kcal}</span> kcal</div>
+                    <div style="color: var(--text-main);"><strong style="color:var(--text-muted)">💓 心率</strong><br><span style="font-size:1.2rem">${trip.stats.avg_heart_rate_bpm}</span> bpm</div>
+                    <div style="color: var(--text-main);"><strong style="color:var(--text-muted)">⏱️ 耗时</strong><br><span style="font-size:1.2rem">${trip.stats.duration_hours}</span> h</div>
+                    <div style="color: var(--text-main);"><strong style="color:var(--text-muted)">⛰️ 爬升</strong><br><span style="font-size:1.2rem">${trip.stats.elevation_gain_m}</span> m</div>
                 </div>
 
-                <div class="hiking-note" style="line-height: 1.6; color: #444; margin-bottom: 2rem;">
-                    <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">心路历程</h3>
-                    <p>${trip.note}</p>
+                <div class="hiking-note" style="line-height: 1.8; color: var(--text-main); margin-bottom: 2.5rem; font-size: 1.05rem;">
+                    <h3 style="border-left: 4px solid var(--primary-green); padding-left: 12px; margin-bottom: 15px; font-weight:500;">心路历程</h3>
+                    <p style="color: #cbd5e1;">${trip.note}</p>
                 </div>
 
-                <div class="hiking-photos">
-                    <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">精彩瞬间</h3>
+                <div class="hiking-photos" style="margin-bottom: 2.5rem;">
+                    <h3 style="border-left: 4px solid var(--primary-green); padding-left: 12px; margin-bottom: 15px; font-weight:500;">精彩瞬间</h3>
                     <div class="photo-gallery">${photoGalleryHtml}</div>
                 </div>
 
-                <div class="hiking-map" style="margin-top: 2rem;">
-                    <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">路线足迹</h3>
-                    <div id="real-map" style="height: 400px; width: 100%; border-radius: 10px; z-index: 1;"></div>
+                <div class="hiking-map">
+                    <h3 style="border-left: 4px solid var(--primary-green); padding-left: 12px; margin-bottom: 15px; font-weight:500;">路线足迹</h3>
+                    <div id="real-map" style="height: 450px; width: 100%; border-radius: 16px; z-index: 1; border: 1px solid var(--border-glow);"></div>
                 </div>
             `;
 
+            // 先 display:block 占位，延时加入 .show 触发淡入动效
             modal.style.display = "block";
-            document.body.style.overflow = "hidden";
+            document.body.style.overflow = "hidden"; // 防止背景滚动
+            setTimeout(() => { modal.classList.add('show'); }, 10);
 
-            if (myMap !== null) {
-                myMap.remove();
-            }
+            if (myMap !== null) { myMap.remove(); }
 
-            myMap = L.map('real-map').setView([trip.location.coordinates.lat, trip.location.coordinates.lng], 13);
-
-            L.tileLayer('https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-                attribution: '© 高德地图',
-                maxZoom: 18
-            }).addTo(myMap);
-
-            if (trip.gpx_file) {
-                new L.GPX(trip.gpx_file, {
-                    async: true,
-                    marker_options: {
-                        startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
-                        endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
-                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png'
-                    },
-                    polyline_options: {
-                        color: '#ff3333',
-                        opacity: 0.8,
-                        weight: 5,
-                        lineCap: 'round'
-                    }
-                }).on('loaded', function(e) {
-                    myMap.fitBounds(e.target.getBounds());
+            // 延时加载地图，确保弹窗DOM尺寸已稳定，防止地图加载错位
+            setTimeout(() => {
+                myMap = L.map('real-map').setView([trip.location.coordinates.lat, trip.location.coordinates.lng], 13);
+                L.tileLayer('https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+                    attribution: '© 高德地图', maxZoom: 18
                 }).addTo(myMap);
-            } else {
-                L.marker([trip.location.coordinates.lat, trip.location.coordinates.lng]).addTo(myMap)
-                    .bindPopup(trip.name).openPopup();
-            }
+
+                if (trip.gpx_file) {
+                    new L.GPX(trip.gpx_file, {
+                        async: true,
+                        marker_options: {
+                            startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
+                            endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png'
+                        },
+                        polyline_options: { color: '#4ade80', opacity: 0.9, weight: 5, lineCap: 'round' }
+                    }).on('loaded', function(e) {
+                        myMap.fitBounds(e.target.getBounds());
+                    }).addTo(myMap);
+                } else {
+                    L.marker([trip.location.coordinates.lat, trip.location.coordinates.lng]).addTo(myMap)
+                        .bindPopup(trip.name).openPopup();
+                }
+            }, 300);
         }
 
         function closeModal() {
-            document.getElementById('trip-modal').style.display = "none";
-            document.body.style.overflow = "auto";
+            const modal = document.getElementById('trip-modal');
+            modal.classList.remove('show');
+            // 等待淡出动画执行完毕后再隐藏DOM
+            setTimeout(() => {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+            }, 300);
         }
 
+        // 点击背景遮罩关闭弹窗
         window.onclick = function(event) {
             const modal = document.getElementById('trip-modal');
-            if (event.target == modal) {
-                closeModal();
-            }
+            if (event.target == modal) closeModal();
         }
 
+        // 初始化加载数据
         loadTrips();
     </script>
 </body>
