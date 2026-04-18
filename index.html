@@ -1,7 +1,4 @@
-<!DOCTYPE html>      
-
-
-
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -12,172 +9,151 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
     <style>
-<style>
-    /* --- 核心变量 --- */
-    :root {
-        --primary-green: #2d5a27;
-        --earth-brown: #8b5a2b;
-        --bg-light: #f4f7f1;
-    }
+        /* --- 核心变量 --- */
+        :root {
+            --primary-green: #2d5a27;
+            --earth-brown: #8b5a2b;
+            --bg-light: #f4f7f1;
+        }
 
-    body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
-        background-color: var(--bg-light);
-        color: #333;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--bg-light);
+            color: #333;
+        }
 
-    /* 顶部导航 */
-    header {
-        background-color: var(--primary-green);
-        color: white;
-        padding: 2rem 1rem;
-        text-align: center;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
+        /* 顶部导航 */
+        header {
+            background-color: var(--primary-green);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
 
-    /* 统计看板 */
-    .stats-banner {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        padding: 1.5rem;
-        background: white;
-        margin-bottom: 2rem;
-    }
+        /* 统计看板 */
+        .stats-banner {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1.5rem;
+            background: white;
+            margin-bottom: 2rem;
+        }
 
-    .stat-item { text-align: center; }
-    .stat-item h3 { margin: 0; color: var(--primary-green); }
-    .stat-item p { margin: 5px 0 0; font-size: 0.9rem; color: #666; }
+        .stat-item { text-align: center; }
+        .stat-item h3 { margin: 0; color: var(--primary-green); }
+        .stat-item p { margin: 5px 0 0; font-size: 0.9rem; color: #666; }
 
-    /* 卡片网格 */
-    .trips-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 1rem 3rem;
-    }
+        /* 卡片网格 */
+        .trips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem 3rem;
+        }
 
-    .trip-card {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease;
-        cursor: pointer; /* 加上这个，鼠标移上去变小手，提醒可以点击 */
-    }
-
-    .trip-card:hover { transform: translateY(-5px); }
-
-    .trip-image { width: 100%; height: 200px; object-fit: cover; }
-
-    .trip-content { padding: 1.5rem; }
-
-    .trip-title { margin: 0 0 0.5rem; font-size: 1.25rem; color: var(--primary-green); }
-
-    .trip-meta { font-size: 0.9rem; color: #777; margin-bottom: 1rem; }
-
-    .trip-stats {
-        display: flex;
-        justify-content: space-between;
-        border-top: 1px solid #eee;
-        padding-top: 1rem;
-        font-weight: bold;
-    }
-
-    /* 错误提示 */
-    #error-msg { text-align: center; color: red; padding: 2rem; }
-
-    /* --- 弹窗样式 (这里是之前出错修正的地方) --- */
-    .modal {
-        display: none; 
-        position: fixed; 
-        z-index: 1000; 
-        left: 0; top: 0;
-        width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.8);
-        overflow-y: auto;
-    }
-
-    .modal-content {
-        background-color: white;
-        margin: 5% auto;
-        padding: 2.5rem;
-        width: 90%;
-        max-width: 850px;
-        border-radius: 20px;
-        position: relative;
-    }
-
-    .close-btn {
-        position: absolute; right: 25px; top: 15px;
-        font-size: 2.5rem; cursor: pointer; color: #999;
-    }
-
-    /* 照片墙排版 */
-    .photo-gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
-        margin-top: 1rem;
-    }
-
-    .gallery-img {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    
-    }
-    <!-- ... existing code ... -->
-    .gallery-img {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    /* --- 📱 手机端适配 (响应式设计 Media Queries) --- */
-    @media (max-width: 768px) {
-        /* 1. 缩小标题和导航栏间距 */
-        header { padding: 1.5rem 1rem; }
-        header h1 { font-size: 1.5rem; }
-        
-        /* 2. 让弹窗更贴合手机屏幕边缘 */
-        .modal-content {
-            width: 92%;
-            margin: 5% auto;
-            padding: 1.2rem;
+        .trip-card {
+            background: white;
             border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+            cursor: pointer;
         }
 
-        /* 3. 关闭按钮移到更方便手指点击的位置 */
-        .close-btn { right: 15px; top: 10px; font-size: 2rem; }
+        .trip-card:hover { transform: translateY(-5px); }
 
-        /* 4. 弹窗内的数据统计（消耗/心率等）强制变为单列排版，避免文字拥挤 */
-        #modal-detail-body > div:nth-child(2) {
-            grid-template-columns: 1fr !important; 
-            gap: 10px !important;
+        .trip-image { width: 100%; height: 200px; object-fit: cover; }
+
+        .trip-content { padding: 1.5rem; }
+
+        .trip-title { margin: 0 0 0.5rem; font-size: 1.25rem; color: var(--primary-green); }
+
+        .trip-meta { font-size: 0.9rem; color: #777; margin-bottom: 1rem; }
+
+        .trip-stats {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+            font-weight: bold;
         }
 
-        /* 5. 照片墙在手机上变为每行显示 2 张小图，或者更紧凑的排版 */
+        /* 错误提示 */
+        #error-msg { text-align: center; color: red; padding: 2rem; }
+
+        /* --- 弹窗样式 --- */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 850px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute; right: 25px; top: 15px;
+            font-size: 2.5rem; cursor: pointer; color: #999;
+        }
+
+        /* 照片墙排版 */
         .photo-gallery {
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 1rem;
         }
 
-        /* 6. 缩小地图高度，给手指留出滑动网页的空间 */
-        #real-map { height: 280px !important; }
-    }
-</style>
-</head>
-<body>
-<!-- ... existing code ... -->
-</style>
+        .gallery-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* --- 📱 手机端适配 (响应式设计 Media Queries) --- */
+        @media (max-width: 768px) {
+            header { padding: 1.5rem 1rem; }
+            header h1 { font-size: 1.5rem; }
+            
+            .modal-content {
+                width: 92%;
+                margin: 5% auto;
+                padding: 1.2rem;
+                border-radius: 12px;
+            }
+
+            .close-btn { right: 15px; top: 10px; font-size: 2rem; }
+
+            #modal-detail-body > div:nth-child(2) {
+                grid-template-columns: 1fr !important; 
+                gap: 10px !important;
+            }
+
+            .photo-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 8px;
+            }
+
+            #real-map { height: 280px !important; }
+        }
     </style>
 </head>
 <body>
@@ -200,178 +176,158 @@
 
     <div id="error-msg"></div>
 
-    <main class="trips-grid" id="trips-grid">
-        </main><div id="trip-modal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <div id="modal-detail-body">
-            </div>
+    <main class="trips-grid" id="trips-grid"></main>
+
+    <div id="trip-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modal-detail-body"></div>
+        </div>
     </div>
-</div>
 
     <script>
-// 1. 全局变量：像一个临时文件夹，存放从 json 读取的所有数据
-let allTrips = [];
+        let allTrips = [];
 
-// 2. 主加载函数：页面一打开就会运行
-async function loadTrips() {
-    const grid = document.getElementById('trips-grid');
-    const errorMsg = document.getElementById('error-msg');
+        async function loadTrips() {
+            const grid = document.getElementById('trips-grid');
+            const errorMsg = document.getElementById('error-msg');
 
-    try {
-        // 读取数据
-        const response = await fetch('trips.json');
-        if (!response.ok) throw new Error('无法读取数据文件，请检查文件名或 Live Server 是否启动');
-        
-        const data = await response.json();
-        allTrips = data.trips; // 将数据存入全局变量，方便点击时调用
+            try {
+                const response = await fetch('trips.json');
+                if (!response.ok) throw new Error('无法读取数据文件，请检查文件名或 Live Server 是否启动');
+                
+                const data = await response.json();
+                allTrips = data.trips; 
 
-        // 更新顶部统计数字 (第 5 步的简化版)
-        updateStats();
+                updateStats();
 
-        // 渲染卡片列表
-        grid.innerHTML = ''; 
-        allTrips.forEach((trip, index) => {
-            const card = document.createElement('div');
-            card.className = 'trip-card';
-            
-            // 【关键】绑定点击事件：点击后根据索引 index 找到这条数据并弹窗
-            card.onclick = () => showTripDetail(index);
-            
-            card.innerHTML = `
-                <img src="${trip.cover_photo}" alt="${trip.name}" class="trip-image" onerror="this.src='https://via.placeholder.com/400x200?text=图片加载失败'">
-                <div class="trip-content">
-                    <div class="trip-meta">${trip.date} · ${trip.season}</div>
-                    <h2 class="trip-title">${trip.name}</h2>
-                    <div class="trip-stats">
-                        <span><i class="fas fa-route"></i> ${trip.stats.distance_km}km</span>
-                        <span><i class="fas fa-arrow-up"></i> ${trip.stats.elevation_gain_m}m</span>
-                        <span><i class="fas fa-signal"></i> ${trip.stats.difficulty}</span>
-                    </div>
+                grid.innerHTML = ''; 
+                allTrips.forEach((trip, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'trip-card';
+                    
+                    card.onclick = () => showTripDetail(index);
+                    
+                    card.innerHTML = `
+                        <img src="${trip.cover_photo}" alt="${trip.name}" class="trip-image" onerror="this.src='https://via.placeholder.com/400x200?text=图片加载失败'">
+                        <div class="trip-content">
+                            <div class="trip-meta">${trip.date} · ${trip.season}</div>
+                            <h2 class="trip-title">${trip.name}</h2>
+                            <div class="trip-stats">
+                                <span><i class="fas fa-route"></i> ${trip.stats.distance_km}km</span>
+                                <span><i class="fas fa-arrow-up"></i> ${trip.stats.elevation_gain_m}m</span>
+                                <span><i class="fas fa-signal"></i> ${trip.stats.difficulty}</span>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.innerHTML = `<p style="color:red">加载失败: ${err.message}</p>`;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('total-trips').innerText = allTrips.length;
+            const totalKm = allTrips.reduce((sum, trip) => sum + trip.stats.distance_km, 0);
+            document.getElementById('total-dist').innerText = totalKm.toFixed(1);
+        }
+
+        let myMap = null;
+
+        function showTripDetail(index) {
+            const trip = allTrips[index];
+            const body = document.getElementById('modal-detail-body');
+            const modal = document.getElementById('trip-modal');
+
+            const photoGalleryHtml = trip.photos.map(p => `
+                <div class="gallery-item">
+                    <img src="${p.file}" class="gallery-img" onerror="this.src='https://via.placeholder.com/200x150?text=照片丢失'">
+                    <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">${p.caption}</p>
+                </div>
+            `).join('');
+
+            body.innerHTML = `
+                <div style="border-bottom: 2px solid var(--primary-green); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
+                    <h1 style="margin:0; color:var(--primary-green)">${trip.name}</h1>
+                    <p style="color:#666; margin: 5px 0;">行程日期：${trip.date} | 地点：${trip.location.region}</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem; background: #f9f9f9; padding: 15px; border-radius: 10px;">
+                    <div><strong>🔥 消耗：</strong>${trip.stats.calories_kcal} kcal</div>
+                    <div><strong>💓 平均心率：</strong>${trip.stats.avg_heart_rate_bpm} bpm</div>
+                    <div><strong>⏱️ 耗时：</strong>${trip.stats.duration_hours} 小时</div>
+                    <div><strong>⛰️ 累计爬升：</strong>${trip.stats.elevation_gain_m} m</div>
+                </div>
+
+                <div class="hiking-note" style="line-height: 1.6; color: #444; margin-bottom: 2rem;">
+                    <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">心路历程</h3>
+                    <p>${trip.note}</p>
+                </div>
+
+                <div class="hiking-photos">
+                    <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">精彩瞬间</h3>
+                    <div class="photo-gallery">${photoGalleryHtml}</div>
+                </div>
+
+                <div class="hiking-map" style="margin-top: 2rem;">
+                    <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">路线足迹</h3>
+                    <div id="real-map" style="height: 400px; width: 100%; border-radius: 10px; z-index: 1;"></div>
                 </div>
             `;
-            grid.appendChild(card);
-        });
 
-    } catch (err) {
-        console.error(err);
-        errorMsg.innerHTML = `<p style="color:red">加载失败: ${err.message}</p>`;
-    }
-}
+            modal.style.display = "block";
+            document.body.style.overflow = "hidden";
 
-// 3. 统计函数
-function updateStats() {
-    document.getElementById('total-trips').innerText = allTrips.length;
-    const totalKm = allTrips.reduce((sum, trip) => sum + trip.stats.distance_km, 0);
-    document.getElementById('total-dist').innerText = totalKm.toFixed(1);
-}
-
-// 4. 显示详情弹窗 (融合第 6 步内容)
-// 全局声明一个地图变量，防止重复加载报错
-let myMap = null;
-
-function showTripDetail(index) {
-    const trip = allTrips[index];
-    const body = document.getElementById('modal-detail-body');
-    const modal = document.getElementById('trip-modal');
-
-    const photoGalleryHtml = trip.photos.map(p => `
-        <div class="gallery-item">
-            <img src="${p.file}" class="gallery-img" onerror="this.src='https://via.placeholder.com/200x150?text=照片丢失'">
-            <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">${p.caption}</p>
-        </div>
-    `).join('');
-
-    body.innerHTML = `
-        <div style="border-bottom: 2px solid var(--primary-green); margin-bottom: 1.5rem; padding-bottom: 0.5rem;">
-            <h1 style="margin:0; color:var(--primary-green)">${trip.name}</h1>
-            <p style="color:#666; margin: 5px 0;">行程日期：${trip.date} | 地点：${trip.location.region}</p>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 1.5rem; background: #f9f9f9; padding: 15px; border-radius: 10px;">
-            <div><strong>🔥 消耗：</strong>${trip.stats.calories_kcal} kcal</div>
-            <div><strong>💓 平均心率：</strong>${trip.stats.avg_heart_rate_bpm} bpm</div>
-            <div><strong>⏱️ 耗时：</strong>${trip.stats.duration_hours} 小时</div>
-            <div><strong>⛰️ 累计爬升：</strong>${trip.stats.elevation_gain_m} m</div>
-        </div>
-
-        <div class="hiking-note" style="line-height: 1.6; color: #444; margin-bottom: 2rem;">
-            <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">心路历程</h3>
-            <p>${trip.note}</p>
-        </div>
-
-        <div class="hiking-photos">
-            <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">精彩瞬间</h3>
-            <div class="photo-gallery">${photoGalleryHtml}</div>
-        </div>
-
-        <div class="hiking-map" style="margin-top: 2rem;">
-            <h3 style="border-left: 4px solid var(--earth-brown); padding-left: 10px;">路线足迹</h3>
-            <div id="real-map" style="height: 400px; width: 100%; border-radius: 10px; z-index: 1;"></div>
-        </div>
-    `;
-
-    // 1. 先显示弹窗，这是非常关键的一步！地图必须在弹窗可见后才能正确计算大小
-    modal.style.display = "block";
-    document.body.style.overflow = "hidden";
-
-    // 2. 如果之前有地图，先销毁它，腾出位置
-    if (myMap !== null) {
-        myMap.remove();
-    }
-
-    // 3. 创建新地图，并将视角设置到你在 JSON 里填写的经纬度坐标
-    myMap = L.map('real-map').setView([trip.location.coordinates.lat, trip.location.coordinates.lng], 13);
-
-    // 4. 加载高德地图作为底图
-    L.tileLayer('https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
-        attribution: '© 高德地图',
-        maxZoom: 18
-    }).addTo(myMap);
-
-    // 5. 如果 JSON 里配置了 gpx 文件路径，就画出轨迹线
-    if (trip.gpx_file) {
-        new L.GPX(trip.gpx_file, {
-            async: true,
-            marker_options: {
-                startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
-                endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png'
-            },
-            polyline_options: {
-                color: '#ff3333', // 轨迹线颜色
-                opacity: 0.8,
-                weight: 5,
-                lineCap: 'round'
+            if (myMap !== null) {
+                myMap.remove();
             }
-        }).on('loaded', function(e) {
-            // 轨迹加载完后，自动缩放地图以完整显示整条路线
-            myMap.fitBounds(e.target.getBounds());
-        }).addTo(myMap);
-    } else {
-        // 如果没有轨迹文件，就在中心点打个简单的标记
-        L.marker([trip.location.coordinates.lat, trip.location.coordinates.lng]).addTo(myMap)
-            .bindPopup(trip.name).openPopup();
-    }
-}
 
-// 5. 关闭弹窗
-function closeModal() {
-    document.getElementById('trip-modal').style.display = "none";
-    // 恢复背景滚动
-    document.body.style.overflow = "auto";
-}
+            myMap = L.map('real-map').setView([trip.location.coordinates.lat, trip.location.coordinates.lng], 13);
 
-// 6. 点击弹窗外部也可关闭
-window.onclick = function(event) {
-    const modal = document.getElementById('trip-modal');
-    if (event.target == modal) {
-        closeModal();
-    }
-}
+            L.tileLayer('https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+                attribution: '© 高德地图',
+                maxZoom: 18
+            }).addTo(myMap);
 
-// 启动执行
-loadTrips();
+            if (trip.gpx_file) {
+                new L.GPX(trip.gpx_file, {
+                    async: true,
+                    marker_options: {
+                        startIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-start.png',
+                        endIconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-icon-end.png',
+                        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png'
+                    },
+                    polyline_options: {
+                        color: '#ff3333',
+                        opacity: 0.8,
+                        weight: 5,
+                        lineCap: 'round'
+                    }
+                }).on('loaded', function(e) {
+                    myMap.fitBounds(e.target.getBounds());
+                }).addTo(myMap);
+            } else {
+                L.marker([trip.location.coordinates.lat, trip.location.coordinates.lng]).addTo(myMap)
+                    .bindPopup(trip.name).openPopup();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('trip-modal').style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('trip-modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        loadTrips();
     </script>
 </body>
 </html>
