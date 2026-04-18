@@ -7,11 +7,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     
+    <!-- ✅ 修复1：从 cdnjs 换到 jsdelivr，echarts-gl 在 cdnjs 上无此版本 -->
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-
     <style>
         /* --- 核心变量 (莫兰迪高级户外主题) --- */
         :root {
@@ -47,15 +48,18 @@
             transform-origin: 75% 55%; 
             transition: transform 3.5s cubic-bezier(0.64, 0, 0.2, 1), filter 3s ease;
         }
+        
         .zoom-into-asia { 
             transform: scale(25) translate(-5%, 5%); 
             filter: blur(8px) brightness(1.5);
         }
+
         .intro-overlay {
             position: absolute; inset: 0;
             background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.8) 100%);
             transition: opacity 1s ease;
         }
+
         .explore-btn {
             position: absolute; top: 33vh; z-index: 10000;
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
@@ -71,7 +75,6 @@
         }
         .fade-out { opacity: 0 !important; pointer-events: none; }
 
-        /* ====== 穿云过渡层（第一阶段：进入云层）====== */
         #cloud-transition {
             position: fixed; inset: 0; z-index: 10005; pointer-events: none;
             background: radial-gradient(circle at center, rgba(240, 248, 255, 1) 0%, rgba(143, 164, 134, 0.5) 60%, rgba(0,0,0,0) 100%);
@@ -81,19 +84,8 @@
         #cloud-transition.enter-clouds {
             opacity: 1; transform: scale(2);
         }
-        /* 快速淡出，把舞台交给液态玻璃层 */
         #cloud-transition.leave-clouds {
-            opacity: 0;
-            transition: opacity 0.45s ease-out;
-        }
-
-        /* ====== 液态玻璃虹膜过渡层（第二阶段）====== */
-        #liquid-canvas {
-            position: fixed;
-            inset: 0;
-            z-index: 10006;
-            pointer-events: none;
-            opacity: 0;
+            opacity: 0; transform: scale(5); transition: opacity 2s ease-out, transform 2s ease-out;
         }
 
         /* ================= 第二部分：主页面 ================= */
@@ -106,6 +98,7 @@
 
         #hologram-section {
             position: relative; width: 100%;
+            /* ✅ 修复2：使用固定像素高度，避免子元素 height:100% 在绝对定位链中失效 */
             height: 520px;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
             overflow: hidden; padding-top: 2rem;
@@ -118,11 +111,12 @@
             text-shadow: 0 0 20px rgba(143, 164, 134, 0.3); line-height: 1.5; font-size: 1.8rem;
         }
 
+        /* ✅ 修复3：3D 容器给予明确的绝对尺寸，ECharts 初始化必须有可测量宽高 */
         .map-3d-container {
             position: absolute;
             top: 0; left: 0;
             width: 100%;
-            height: 100%;
+            height: 100%; /* 父级已固定 520px，此处可正常继承 */
             z-index: 1;
         }
         #china-3d-map {
@@ -198,11 +192,8 @@
 </head>
 <body>
 
-    <!-- 第一阶段：穿云过渡层 -->
+    <!-- 穿云过渡层 -->
     <div id="cloud-transition"></div>
-
-    <!-- 第二阶段：液态玻璃虹膜过渡层 -->
-    <canvas id="liquid-canvas"></canvas>
 
     <div id="intro-screen">
         <div class="intro-bg" id="intro-bg"></div>
@@ -214,7 +205,7 @@
         <div id="hologram-section">
             <header>
                 <h1>
-                    <i class="fas fa-satellite"></i> 爱并非存在于相互的凝视<br>而是两个人一起望向外在的同一方向
+                    <i class="fas fa-satellite"></i> 美妙人生的关键，<br>在于你能迷上什么东西
                 </h1>
             </header>
             <div class="map-3d-container">
@@ -241,275 +232,36 @@
         let allTrips = [];
         let echartMap = null;
         let visitedProvincesMapData = [];
+        /* ✅ 修复4：用标志位记录地图 GeoJSON 是否已注册完毕 */
         let mapGeoReady = false;
 
-        /* ================================================================
-         * 液态玻璃虹膜动画引擎
-         * 效果：iOS液态玻璃圆环由外向内收缩，波浪状液态边缘，最终揭示3D地图
-         * ================================================================ */
-        function playLiquidIrisClose() {
-            const canvas = document.getElementById('liquid-canvas');
-            const ctx = canvas.getContext('2d');
-
-            // 适配屏幕尺寸
-            canvas.width  = window.innerWidth;
-            canvas.height = window.innerHeight;
-            canvas.style.opacity = '1';
-
-            const W = canvas.width;
-            const H = canvas.height;
-            const cx = W / 2;
-            const cy = H / 2;
-            // 对角线半径，确保覆盖整个画布四角
-            const maxR = Math.sqrt(cx * cx + cy * cy) + 30;
-
-            const DURATION = 2600; // ms，整段动画时长
-            let startTime = null;
-
-            /* ---- 缓动函数 ---- */
-            function easeInOutQuart(t) {
-                return t < 0.5
-                    ? 8 * t * t * t * t
-                    : 1 - Math.pow(-2 * t + 2, 4) / 2;
-            }
-            function easeOutCubic(t) {
-                return 1 - Math.pow(1 - t, 3);
-            }
-
-            /* ---- 绘制iOS液态玻璃圆环 ----
-             * r        : 圆环中心半径
-             * ringW    : 圆环宽度
-             * alpha    : 整体透明度 0-1
-             * phase    : 波浪相位偏移（随时间递增产生流动感）
-             */
-            function drawGlassRing(r, ringW, alpha, phase) {
-                if (r < 2) return;
-
-                const SEG       = 256;           // 多边形分段数（越高越圆滑）
-                const WAVE_FREQ = 9;             // 波浪周期数
-                const WAVE_AMP  = Math.min(24, ringW * 0.38); // 波浪幅度
-
-                // 生成外边/内边顶点
-                const outer = [];
-                const inner = [];
-                for (let i = 0; i <= SEG; i++) {
-                    const ang  = (i / SEG) * Math.PI * 2;
-                    // 外圈波浪
-                    const wO = WAVE_AMP * Math.sin(ang * WAVE_FREQ + phase);
-                    // 内圈波浪（相位偏移，让内外边形成"液态厚度"变化）
-                    const wI = WAVE_AMP * 0.55 * Math.sin(ang * WAVE_FREQ + phase + 1.1);
-
-                    const rO = r + ringW * 0.5 + wO;
-                    const rI = r - ringW * 0.5 + wI;
-
-                    outer.push([cx + Math.cos(ang) * rO, cy + Math.sin(ang) * rO]);
-                    inner.push([cx + Math.cos(ang) * rI, cy + Math.sin(ang) * rI]);
-                }
-
-                ctx.save();
-
-                /* --- 1. 圆环填充：iOS磨砂玻璃渐变 --- */
-                ctx.beginPath();
-                outer.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y));
-                ctx.closePath();
-                // 内圈逆时针描边，形成镂空（偶-奇填充规则）
-                [...inner].reverse().forEach(([x, y]) => ctx.lineTo(x, y));
-                ctx.closePath();
-
-                const rGrad = ctx.createRadialGradient(cx, cy, r - ringW * 0.5, cx, cy, r + ringW * 0.5);
-                rGrad.addColorStop(0.00, `rgba(160, 210, 255, ${alpha * 0.06})`);
-                rGrad.addColorStop(0.15, `rgba(215, 240, 255, ${alpha * 0.32})`);
-                rGrad.addColorStop(0.38, `rgba(250, 255, 255, ${alpha * 0.62})`);
-                rGrad.addColorStop(0.55, `rgba(200, 238, 255, ${alpha * 0.52})`);
-                rGrad.addColorStop(0.78, `rgba(220, 242, 255, ${alpha * 0.28})`);
-                rGrad.addColorStop(1.00, `rgba(170, 215, 255, ${alpha * 0.05})`);
-                ctx.fillStyle   = rGrad;
-                ctx.fill('evenodd');
-
-                /* --- 2. 外边缘高光线（亮白） --- */
-                ctx.beginPath();
-                outer.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y));
-                ctx.closePath();
-                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.88})`;
-                ctx.lineWidth   = 1.6;
-                ctx.stroke();
-
-                /* --- 3. 内边缘柔光线（浅蓝白） --- */
-                ctx.beginPath();
-                inner.forEach(([x, y], i) => i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y));
-                ctx.closePath();
-                ctx.strokeStyle = `rgba(180, 230, 255, ${alpha * 0.52})`;
-                ctx.lineWidth   = 1.0;
-                ctx.stroke();
-
-                /* --- 4. 棱镜色散：顶部弧段彩虹高光 --- */
-                const prismaGrad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy - r);
-                prismaGrad.addColorStop(0.00, `rgba(80, 200, 255, ${alpha * 0.55})`);
-                prismaGrad.addColorStop(0.25, `rgba(180, 100, 255, ${alpha * 0.40})`);
-                prismaGrad.addColorStop(0.50, `rgba(80, 255, 200, ${alpha * 0.50})`);
-                prismaGrad.addColorStop(0.75, `rgba(255, 200, 80,  ${alpha * 0.40})`);
-                prismaGrad.addColorStop(1.00, `rgba(80, 180, 255, ${alpha * 0.55})`);
-                ctx.beginPath();
-                ctx.arc(cx, cy, r + ringW * 0.5 + 1, -Math.PI * 0.72, -Math.PI * 0.28);
-                ctx.strokeStyle = prismaGrad;
-                ctx.lineWidth   = 3.5;
-                ctx.stroke();
-
-                /* --- 5. 镜面高光：左上方弧段 specular glint --- */
-                const specAngleStart = -Math.PI * 0.88;
-                const specAngleEnd   = -Math.PI * 0.58;
-                const specGrad = ctx.createLinearGradient(
-                    cx + Math.cos(specAngleStart) * r,
-                    cy + Math.sin(specAngleStart) * r,
-                    cx + Math.cos(specAngleEnd)   * r,
-                    cy + Math.sin(specAngleEnd)   * r
-                );
-                specGrad.addColorStop(0,   `rgba(255,255,255,0)`);
-                specGrad.addColorStop(0.5, `rgba(255,255,255,${alpha * 0.75})`);
-                specGrad.addColorStop(1,   `rgba(255,255,255,0)`);
-                ctx.beginPath();
-                ctx.arc(cx, cy, r + ringW * 0.4, specAngleStart, specAngleEnd);
-                ctx.strokeStyle = specGrad;
-                ctx.lineWidth   = 4;
-                ctx.stroke();
-
-                /* --- 6. 内侧薄雾晕（圆环内边的柔光散射） --- */
-                const innerGlow = ctx.createRadialGradient(cx, cy, r - ringW * 0.5, cx, cy, r - ringW * 0.1);
-                innerGlow.addColorStop(0, `rgba(200, 235, 255, ${alpha * 0.20})`);
-                innerGlow.addColorStop(1, `rgba(200, 235, 255, 0)`);
-                ctx.beginPath();
-                ctx.arc(cx, cy, r - ringW * 0.1, 0, Math.PI * 2);
-                ctx.arc(cx, cy, r - ringW * 0.5, 0, Math.PI * 2, true);
-                ctx.fillStyle = innerGlow;
-                ctx.fill('evenodd');
-
-                ctx.restore();
-            }
-
-            /* ---- 主动画帧 ---- */
-            function frame(ts) {
-                if (!startTime) startTime = ts;
-                const elapsed = ts - startTime;
-                const t       = Math.min(elapsed / DURATION, 1); // 线性进度 0→1
-                const et      = easeInOutQuart(t);                // 缓动进度
-
-                ctx.clearRect(0, 0, W, H);
-
-                /* 主圆环当前半径（由 maxR 收缩至 0） */
-                const mainR = maxR * (1 - et);
-
-                /* ----
-                 * 圆环内侧：覆盖雾气（白色磨砂区域随圆环收缩而收缩）
-                 * 圆环外侧：透明（3D地图已经可见）
-                 * ---- */
-                const fogInnerR = Math.max(0, mainR - 42); // 雾气圆稍小于环内径，留出过渡
-                if (fogInnerR > 1) {
-                    const fogA = Math.min(1, 0.86 + 0.1 * Math.cos(elapsed * 0.003)); // 轻微呼吸感
-                    const fogGrad = ctx.createRadialGradient(cx, cy, fogInnerR * 0.25, cx, cy, fogInnerR);
-                    fogGrad.addColorStop(0.00, `rgba(205, 228, 255, ${fogA})`);
-                    fogGrad.addColorStop(0.60, `rgba(218, 238, 255, ${fogA * 0.97})`);
-                    fogGrad.addColorStop(0.85, `rgba(232, 246, 255, ${fogA * 0.88})`);
-                    fogGrad.addColorStop(1.00, `rgba(245, 251, 255, ${fogA * 0.50})`);
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, fogInnerR, 0, Math.PI * 2);
-                    ctx.fillStyle = fogGrad;
-                    ctx.fill();
-                }
-
-                /* ---- 主玻璃圆环 ---- */
-                const ringW    = 52 + 16 * Math.sin(t * Math.PI * 2.8); // 宽度随动：收缩末段略微"鼓胀"
-                const ringAlpha = t < 0.92
-                    ? 0.94
-                    : 0.94 * easeOutCubic(1 - (t - 0.92) / 0.08); // 最后淡出
-                const phase    = elapsed * 0.0062; // 波浪流速
-
-                if (mainR > 4) {
-                    drawGlassRing(mainR, ringW, ringAlpha, phase);
-                }
-
-                /* ---- 拖尾回声环（3条，透明度递减） ---- */
-                const echoParams = [
-                    { tOffset: 0.11, alphaScale: 0.50, wScale: 0.48, phaseOff: 0.0  },
-                    { tOffset: 0.23, alphaScale: 0.24, wScale: 0.30, phaseOff: 2.3  },
-                    { tOffset: 0.38, alphaScale: 0.11, wScale: 0.18, phaseOff: 4.7  },
-                ];
-                echoParams.forEach(({ tOffset, alphaScale, wScale, phaseOff }) => {
-                    const et2 = Math.min(t / (1 - tOffset), 1);
-                    if (t <= tOffset) return;
-                    const echoR  = maxR * (1 - easeInOutQuart(et2));
-                    const echoA  = alphaScale * Math.sin(et2 * Math.PI);
-                    if (echoR > 4 && echoA > 0.01) {
-                        drawGlassRing(echoR, ringW * wScale, echoA, phase + phaseOff);
-                    }
-                });
-
-                /* ---- 收尾光晕：圆环归零时中心一道柔光闪过 ---- */
-                if (t > 0.86) {
-                    const flashT  = easeOutCubic((t - 0.86) / 0.14);
-                    const flashR  = Math.max(mainR + ringW * 0.8, 1);
-                    const flashGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, flashR);
-                    flashGrad.addColorStop(0.00, `rgba(230, 252, 255, ${flashT * 0.65})`);
-                    flashGrad.addColorStop(0.35, `rgba(143, 200, 175, ${flashT * 0.30})`);
-                    flashGrad.addColorStop(0.70, `rgba(80,  164, 134, ${flashT * 0.10})`);
-                    flashGrad.addColorStop(1.00, `rgba(0,   0,   0,   0)`);
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, flashR, 0, Math.PI * 2);
-                    ctx.fillStyle = flashGrad;
-                    ctx.fill();
-                }
-
-                if (t < 1) {
-                    requestAnimationFrame(frame);
-                } else {
-                    // 动画结束：清空画布，画布淡出
-                    ctx.clearRect(0, 0, W, H);
-                    canvas.style.transition = 'opacity 0.35s ease';
-                    canvas.style.opacity    = '0';
-                }
-            }
-
-            requestAnimationFrame(frame);
-        }
-
-        /* ================================================================
-         * 史诗级转场动画序列（修改：将原来的离云阶段替换为液态玻璃虹膜）
-         * ================================================================ */
-        document.getElementById('explore-btn').addEventListener('click', function () {
-            const btn             = this;
-            const introBg         = document.getElementById('intro-bg');
-            const introOverlay    = document.getElementById('intro-overlay');
-            const introScreen     = document.getElementById('intro-screen');
-            const mainWrapper     = document.getElementById('main-wrapper');
+        /* ================= 史诗级转场动画序列 ================= */
+        document.getElementById('explore-btn').addEventListener('click', function() {
+            const btn = this;
+            const introBg = document.getElementById('intro-bg');
+            const introOverlay = document.getElementById('intro-overlay');
+            const introScreen = document.getElementById('intro-screen');
+            const mainWrapper = document.getElementById('main-wrapper');
             const cloudTransition = document.getElementById('cloud-transition');
 
-            // 第 0 步：按钮反馈
-            btn.innerText       = "风沙星辰";
+            btn.innerText = "进入大气层：目标中国...";
             btn.style.animation = "none";
-            setTimeout(() => {
-                btn.classList.add('fade-out');
-                introOverlay.classList.add('fade-out');
-            }, 200);
+            setTimeout(() => { btn.classList.add('fade-out'); introOverlay.classList.add('fade-out'); }, 200);
 
-            // 第 1 步：背景图开始放大（飞入亚洲）
             introBg.classList.add('zoom-into-asia');
 
-            // 第 2 步 t=1300ms：进入云层（白色云雾放大铺满屏幕）
             setTimeout(() => {
                 cloudTransition.classList.add('enter-clouds');
             }, 1300);
 
-            // 第 3 步 t=2000ms：切换到主页面（云雾幕后已经准备好）
             setTimeout(() => {
                 introScreen.style.display = 'none';
                 mainWrapper.classList.add('active');
             }, 2000);
 
-            // 第 4 步 t=2300ms：
-            //   ① 先渲染3D地图（让地图在玻璃幕后就绪）
-            //   ② 云雾快速淡出（0.45s）
-            //   ③ 液态玻璃虹膜登场，由外向内收缩揭示地图
             setTimeout(() => {
-                // 渲染地图（地图在液态玻璃层之下，动画过程中将被逐渐揭示）
+                cloudTransition.classList.replace('enter-clouds', 'leave-clouds');
+                /* ✅ 修复5：只有 GeoJSON 就绪后才渲染，否则延时等待 */
                 if (mapGeoReady) {
                     render3DMap();
                 } else {
@@ -520,15 +272,6 @@
                         }
                     }, 200);
                 }
-
-                // 云雾快速淡出
-                cloudTransition.classList.replace('enter-clouds', 'leave-clouds');
-
-                // 200ms 后启动液态玻璃虹膜（和云雾淡出有短暂重叠，过渡更自然）
-                setTimeout(() => {
-                    playLiquidIrisClose();
-                }, 200);
-
             }, 2300);
         });
 
@@ -543,10 +286,12 @@
                 renderCards();
                 updateStats();
 
+                /* ✅ 修复6：GeoJSON 改用更稳定的 CDN 源 */
                 const mapGeoJson = await fetch(
                     'https://cdn.jsdelivr.net/npm/echarts@5.5.0/node_modules/echarts/map/json/china.json'
                 ).then(r => r.ok ? r.json() : null).catch(() => null);
 
+                /* 备用地址：若上方失败则使用 fastly */
                 const geoData = mapGeoJson || await fetch(
                     'https://fastly.jsdelivr.net/npm/echarts@4.9.0/map/json/china.json'
                 ).then(r => r.json());
@@ -554,6 +299,7 @@
                 echarts.registerMap('china', geoData);
                 mapGeoReady = true;
 
+                /* 解析去过的省份 */
                 const visitedNames = new Set();
                 const provinceNames = ["北京", "天津", "上海", "重庆", "河北", "河南", "云南", "辽宁",
                     "黑龙江", "湖南", "安徽", "山东", "新疆", "江苏", "浙江", "江西", "湖北", "广西",
@@ -590,6 +336,7 @@
             const container = document.getElementById('china-3d-map');
             if (!container) return;
 
+            /* ✅ 修复7：强制确认容器尺寸后再 init，避免 ECharts 拿到 0x0 画布 */
             if (echartMap) {
                 echartMap.dispose();
             }
@@ -731,6 +478,7 @@
                             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/pin-shadow.png'
                         },
                         polyline_options: {
+                            /* ✅ 修复8：轨迹颜色改为蓝色 */
                             color: '#3b82f6',
                             opacity: 0.9,
                             weight: 5,
