@@ -1,317 +1,172 @@
 {
   "_说明": {
-    "版本": "1.1",
+    "版本": "2.0",
     "用途": "户外徒步记录数据文件",
     "更新方式": "每次新增徒步，在 trips 数组末尾复制一份完整的对象，修改其中的值即可",
-    "图片路径": "建议统一放在 photos/ 文件夹下，按路线名称建子文件夹，例如 photos/badaling/cover.jpg",
-    "difficulty 可选值": ["初级", "中级", "高级"],
-    "season 可选值": ["春", "夏", "秋", "冬"],
-    "新增字段说明": {
-      "avg_speed_kmh": "平均速度，单位 km/h，可从运动手表或 App 导出",
-      "best_pace_per_km": "最快配速，格式 mm:ss，例如 6:30 表示每公里最快 6 分 30 秒",
-      "avg_heart_rate_bpm": "平均心率，单位 bpm（次/分钟），需要心率设备记录",
-      "elevation_gain_m": "累积上升，单位 米，徒步中所有上坡段的总爬升高度",
-      "elevation_loss_m": "累积下降，单位 米，徒步中所有下坡段的总下降高度",
-      "calories_kcal": "卡路里消耗，单位 kcal（大卡），可从运动手表或 App 导出"
-    }
+    "图片路径": "建议统一放在 photos/ 文件夹下，注意文件后缀名（如 .jpg 或 .png）需要完全匹配"
   },
-
   "trips": [
     {
-      "_注释": "========== 第 1 条记录：香港离岛凤凰径徒步 ==========",
-
       "id": 1,
-      "name": "离岛凤凰径徒步",
-      "date": "2026-4-01",
+      "name": "香港大屿山凤凰径",
+      "date": "2026-04",
       "season": "春",
-
       "location": {
-        "region": "香港",
-        "country": "中国",
+        "region": "香港大屿山",
         "coordinates": {
-          "lat": 22.3964,
-          "lng": 114.1095
+          "lat": 22.2651,
+          "lng": 114.0018
         }
       },
-
-      "stats": {
-        "distance_km": 12.5,
-        "duration_hours": 5,
-        "elevation_m": 580,
-        "difficulty": "中级",
-        "avg_speed_kmh": 2.5,
-        "best_pace_per_km": "7:20",
-        "avg_heart_rate_bpm": 118,
-        "elevation_gain_m": 420,
-        "elevation_loss_m": 390,
-        "calories_kcal": 860
-      },
+      "cover_photo": "photos/23_cover.jpg",
       "gpx_file": "tracks/fenghuangjingHK.gpx",
-
-      "cover_photo": "photos/fenghuangjingHK/19.jpg",
-
+      "stats": {
+        "distance_km": 70.5,
+        "elevation_gain_m": 3300,
+        "difficulty": "史诗",
+        "calories_kcal": 6500,
+        "avg_heart_rate_bpm": 145,
+        "duration_hours": 24
+      },
+      "note": "跨越大屿山的日与夜。70公里的漫长跋涉，海风与山脊相伴，是对体能和意志的极致洗礼。",
+      "data_type": "complete",
       "photos": [
-        {
-          "file": "photos/fenghuangjingHK/22.jpg",
-          "caption": "渡轮上看维多利亚港",
-          "is_highlight": true
-        },
-        {
-          "file": "photos/fenghuangjingHK/02.jpg",
-          "caption": "梅窝码头",
-          "is_highlight": false
-        },
-        {
-          "file": "photos/fenghuangjingHK/11.jpg",
-          "caption": "村庄指示牌",
-          "is_highlight": false
-        },
-        {
-          "file": "photos/fenghuangjingHK/23.jpg",
-          "caption": "L136路牌",
-          "is_highlight": false
-        },
-        {
-          "file": "photos/fenghuangjingHK/24.jpg",
-          "caption": "中环路牌",
-          "is_highlight": true
-        },
-        {
-          "file": "photos/fenghuangjingHK/09.jpg",
-          "caption": "大东山顶",
-          "is_highlight": false
-        }
-      ],
-
-      "gear": [
-        {
-          "category": "鞋服",
-          "items": ["中帮登山鞋", "速干裤", "防风外套"]
-        },
-        {
-          "category": "背包装备",
-          "items": ["30L 登山包", "雨衣", "登山杖 × 2", "急救包"]
-        },
-        {
-          "category": "导航",
-          "items": ["两步路 App", "离线地图"]
-        },
-        {
-          "category": "补给",
-          "items": ["行动粮 500g", "饮用水 2L", "能量棒 × 3"]
-        }
-      ],
-
-      "tags": ["历史", "秋季", "城墙", "北京"],
-      "note": "秋天的红叶配长城，层林尽染。站在烽火台上，北京秋色尽收眼底。推荐从南门入，走到好汉坡再原路返回，全程约 5 小时。",
-      "rating": 5,
-      "companions": ["独行"]
+        { "file": "photos/03.jpg", "caption": "落花" },
+        { "file": "photos/04.jpg", "caption": "晨雾" },
+        { "file": "photos/06.jpg", "caption": "梅窝码头" },
+        { "file": "photos/09.jpg", "caption": "大东山顶" },
+        { "file": "photos/10.jpg", "caption": "红糖水" },
+        { "file": "photos/11.jpg", "caption": "芋头" },
+        { "file": "photos/17.jpg", "caption": "看海" },
+        { "file": "photos/18.jpg", "caption": "煮茶" },
+        { "file": "photos/19.jpg", "caption": "露营" },
+        { "file": "photos/21.jpg", "caption": "灯光" }
+      ]
     },
-
     {
-      "_注释": "========== 第 2 条记录：黄山北海景区 ==========",
-
       "id": 2,
-      "name": "黄山北海景区",
-      "date": "2024-07-15",
-      "season": "夏",
-
+      "name": "江西武功山大环线",
+      "date": "2026-02",
+      "season": "冬",
       "location": {
-        "region": "安徽",
-        "country": "中国",
+        "region": "江西萍乡",
         "coordinates": {
-          "lat": 30.1308,
-          "lng": 118.1576
+          "lat": 27.4537,
+          "lng": 114.1164
         }
       },
-
+      "cover_photo": "photos/portrait_cover.jpg",
+      "gpx_file": "tracks/jiangxiwugongshan.gpx",
       "stats": {
-        "distance_km": 18.2,
-        "duration_hours": 8,
-        "elevation_m": 1864,
+        "distance_km": 46.5,
+        "elevation_gain_m": 3000,
         "difficulty": "高级",
-        "avg_speed_kmh": 2.3,
-        "best_pace_per_km": "6:45",
-        "avg_heart_rate_bpm": 142,
-        "elevation_gain_m": 1200,
-        "elevation_loss_m": 1150,
-        "calories_kcal": 1540
+        "calories_kcal": 4200,
+        "avg_heart_rate_bpm": 152,
+        "duration_hours": 18
       },
-
-      "cover_photo": "photos/huangshan/cover.jpg",
-
+      "note": "高山草甸上的凛冽寒风，走在万亩云海之上的山脊线，感受到人类的渺小与自然伟大的共振。",
+      "data_type": "complete",
       "photos": [
-        {
-          "file": "photos/huangshan/01_sea_of_clouds.jpg",
-          "caption": "云海日出",
-          "is_highlight": true
-        },
-        {
-          "file": "photos/huangshan/02_welcoming_pine.jpg",
-          "caption": "迎客松",
-          "is_highlight": false
-        },
-        {
-          "file": "photos/huangshan/03_lotus_peak.jpg",
-          "caption": "莲花峰顶",
-          "is_highlight": false
-        }
-      ],
-
-      "gear": [
-        {
-          "category": "鞋服",
-          "items": ["防滑登山鞋", "速干T恤", "冲锋衣"]
-        },
-        {
-          "category": "背包装备",
-          "items": ["40L 登山包", "头灯", "护膝", "登山杖 × 2"]
-        },
-        {
-          "category": "导航",
-          "items": ["两步路 App", "景区纸质地图"]
-        },
-        {
-          "category": "补给",
-          "items": ["压缩饼干", "饮用水 3L", "盐丸", "巧克力"]
-        }
-      ],
-
-      "tags": ["云海", "夏季", "险峻", "日出"],
-      "note": "凌晨三点出发，赶上了传说中的黄山云海日出。建议提前一天住山上，第二天天亮前出发抢占观日出的位置。",
-      "rating": 5,
-      "companions": ["朋友 × 2"]
+        { "file": "photos/Sunset.jpg", "caption": "落日" },
+        { "file": "photos/mountain range.jpg", "caption": "山峦" },
+        { "file": "photos/High slope.jpg", "caption": "绝望坡" },
+        { "file": "photos/kitten.jpg", "caption": "猫" },
+        { "file": "photos/camp.jpg", "caption": "观音宕营地" },        
+        { "file": "photos/exhausted.jpg", "caption": "屁降" },
+        { "file": "photos/fog.jpg", "caption": "云雾" }
+      ]
     },
-
     {
-      "_注释": "========== 第 3 条记录：西湖环湖步道 ==========",
-
       "id": 3,
-      "name": "西湖环湖步道",
-      "date": "2024-03-22",
+      "name": "深圳七大望东连穿",
+      "date": "2026-03",
       "season": "春",
-
       "location": {
-        "region": "杭州",
-        "country": "中国",
+        "region": "广东深圳大鹏",
         "coordinates": {
-          "lat": 30.2590,
-          "lng": 120.1551
+          "lat": 22.5300,
+          "lng": 114.5248
         }
       },
-
+      "cover_photo": "photos/garden.jpg",
+      "gpx_file": "tracks/shenzhenqidawngdong.gpx",
       "stats": {
-        "distance_km": 16.0,
-        "duration_hours": 4,
-        "elevation_m": 120,
-        "difficulty": "初级",
-        "avg_speed_kmh": 4.0,
-        "best_pace_per_km": "5:50",
-        "avg_heart_rate_bpm": 98,
-        "elevation_gain_m": 80,
-        "elevation_loss_m": 75,
-        "calories_kcal": 720
+        "distance_km": 20.0,
+        "elevation_gain_m": 1800,
+        "difficulty": "困难",
+        "calories_kcal": 2400,
+        "avg_heart_rate_bpm": 160,
+        "duration_hours": 9
       },
-
-      "cover_photo": "photos/westlake/cover.jpg",
-
+      "note": "深圳经典的硬核连穿路线。野路丛生，碎石陡坡，是膝盖与意志的双重考验。",
+      "data_type": "complete",
       "photos": [
-        {
-          "file": "photos/westlake/01_broken_bridge.jpg",
-          "caption": "春雨断桥",
-          "is_highlight": true
-        },
-        {
-          "file": "photos/westlake/02_leifeng_pagoda.jpg",
-          "caption": "雷峰塔晚霞",
-          "is_highlight": false
+        { "file": "photos/Mountains and rivers.jpg", "caption": "山与海" },
+        { "file": "photos/sea.jpg", "caption": "雾气" },
+        { "file": "photos/White flowers.jpg", "caption": "白花" },
+        { "file": "photos/yellow flower.jpg", "caption": "黄花" }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "东莞爱心线",
+      "date": "2026-03",
+      "season": "春",
+      "location": {
+        "region": "广东东莞",
+        "coordinates": {
+          "lat": 22.8796,
+          "lng": 114.1782
         }
-      ],
-
-      "gear": [
-        {
-          "category": "鞋服",
-          "items": ["运动鞋", "薄外套"]
-        },
-        {
-          "category": "背包装备",
-          "items": ["15L 日包"]
-        },
-        {
-          "category": "补给",
-          "items": ["饮用水 1.5L", "小食"]
+      },
+      "cover_photo": "photos/749.jpg",
+      "gpx_file": "tracks/dongguanaixinxian.gpx",
+      "stats": {
+        "distance_km": 18.6,
+        "elevation_gain_m": 900,
+        "difficulty": "中级",
+        "calories_kcal": 1800,
+        "avg_heart_rate_bpm": 142,
+        "duration_hours": 7
+      },
+      "note": "一场充满仪式感的徒步。用高驰手表记录完整的轨迹，在地图上画出一个巨大的爱心，送给山野的浪漫。",
+      "data_type": "complete",
+      "photos": [
+        { "file": "photos/flower.jpg", "caption": "粉花" },
+        { "file": "photos/Certificate.jpg", "caption": "奖牌" }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "深圳梧桐山登顶",
+      "date": "2026-03",
+      "season": "春",
+      "location": {
+        "region": "广东深圳",
+        "coordinates": {
+          "lat": 22.5607,
+          "lng": 114.1787
         }
-      ],
-
-      "tags": ["城市", "春季", "湖景"],
-      "note": "春雨绵绵，游人稀少，踩着湿润的石板路绕湖一圈，别有一番诗意。",
-      "rating": 4,
-      "companions": ["独行"]
+      },
+      "cover_photo": "photos/port.jpg",
+      "gpx_file": "tracks/shenzhenwutongshan.gpx",
+      "stats": {
+        "distance_km": 11.3,
+        "elevation_gain_m": 1050,
+        "difficulty": "初级+",
+        "calories_kcal": 1300,
+        "avg_heart_rate_bpm": 138,
+        "duration_hours": 5
+      },
+      "note": "鹏城第一峰。拾阶而上，好汉坡的汗水换来的是俯瞰整座城市繁华与大鹏湾海景的宁静。",
+      "data_type": "complete",
+      "photos": [
+        { "file": "photos/dark clouds.jpg", "caption": "乌云" },
+        { "file": "photos/water.jpg", "caption": "海景" },
+        { "file": "photos/window.jpg", "caption": "码头" },
+        { "file": "photos/Boat.jpg", "caption": "船" }
+      ]
     }
-  ],
-
-  "_新增模板": {
-    "_说明": "复制这段内容到 trips 数组末尾，填写你的数据，id 记得递增",
-    "id": 99,
-    "name": "路线名称",
-    "date": "YYYY-MM-DD",
-    "season": "春/夏/秋/冬",
-
-    "location": {
-      "region": "城市",
-      "country": "中国",
-      "coordinates": {
-        "lat": 0.0,
-        "lng": 0.0
-      }
-    },
-
-    "stats": {
-      "distance_km": 0.0,
-      "duration_hours": 0,
-      "elevation_m": 0,
-      "difficulty": "初级/中级/高级",
-      "avg_speed_kmh": 0.0,
-      "best_pace_per_km": "00:00",
-      "avg_heart_rate_bpm": 0,
-      "elevation_gain_m": 0,
-      "elevation_loss_m": 0,
-      "calories_kcal": 0
-    },
-
-    "cover_photo": "photos/路线名/cover.jpg",
-
-    "photos": [
-      {
-        "file": "photos/路线名/01.jpg",
-        "caption": "照片说明",
-        "is_highlight": true
-      }
-    ],
-
-    "gear": [
-      {
-        "category": "鞋服",
-        "items": []
-      },
-      {
-        "category": "背包装备",
-        "items": []
-      },
-      {
-        "category": "导航",
-        "items": []
-      },
-      {
-        "category": "补给",
-        "items": []
-      }
-    ],
-
-    "tags": [],
-    "note": "这次徒步的感受和建议……",
-    "rating": 5,
-    "companions": ["独行"]
-  }
+  ]
 }
-
